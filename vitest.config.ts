@@ -16,7 +16,8 @@ export default defineConfig({
     // Coverage configuration
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text-summary', 'text', 'json', 'html'],
+      reportOnFailure: true,
       include: ['src/**/*.ts'],
       exclude: [
         'src/**/*.d.ts',
@@ -32,14 +33,15 @@ export default defineConfig({
           lines: 80,
           statements: 80
         }
-      }
+      },
+      all: true
     },
 
     // Timeout configuration
     testTimeout: 10000,
 
     // Better error reporting
-    reporter: ['verbose'],
+    reporters: ['verbose'],
 
     // Mock configuration
     clearMocks: true,
