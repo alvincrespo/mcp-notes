@@ -9,18 +9,31 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+
+    // Path mapping for @ alias
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    // Include Vitest types
+    "types": ["node", "vitest/globals"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*",
+    "vitest.config.ts"
   ],
   "exclude": [
     "node_modules",
     "build",
-    "tests"
+    "**/*.js"
   ]
 }
