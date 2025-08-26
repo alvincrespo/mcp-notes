@@ -40,7 +40,7 @@ After building, you can test the server using the MCP Inspector:
 ## 📁 Project Structure
 
 ```
-notes-mcp-server/
+mcp-notes/
 ├── src/
 │   ├── index.ts          # Main server entry point
 │   ├── storage/          # Data persistence layer (coming soon)

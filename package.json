@@ -1,5 +1,5 @@
 {
-  "name": "notes-mcp-server",
+  "name": "mcp-notes",
   "version": "1.0.0",
   "description": "Personal Note Manager MCP Server - Learning Project",
   "type": "module",

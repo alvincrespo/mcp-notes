@@ -8,8 +8,8 @@ The Personal Note Manager MCP server teaches core MCP concepts through practical
 
 ## Section 1: Environment setup and MCP fundamentals
 
-**Difficulty**: Easy  
-**Estimated Time**: 3-4 hours  
+**Difficulty**: Easy
+**Estimated Time**: 3-4 hours
 **Purpose**: Establish development environment and understand MCP architecture
 
 ### Technical requirements
@@ -38,7 +38,7 @@ Git for version control
 
 Create the following directory structure:
 ```
-notes-mcp-server/
+mcp-notes/
 ├── src/
 │   ├── index.ts
 │   ├── server.ts
@@ -58,7 +58,7 @@ notes-mcp-server/
 Create `package.json`:
 ```json
 {
-  "name": "notes-mcp-server",
+  "name": "mcp-notes",
   "version": "1.0.0",
   "type": "module",
   "main": "./build/index.js",
@@ -115,10 +115,10 @@ async function main() {
   });
 
   // Server will be configured in next sections
-  
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   // Critical: Use console.error for logging in STDIO mode
   console.error("Notes MCP server started");
 }
@@ -143,8 +143,8 @@ npm run inspector
 
 ## Section 2: Note data model and storage layer
 
-**Difficulty**: Easy  
-**Estimated Time**: 4-5 hours  
+**Difficulty**: Easy
+**Estimated Time**: 4-5 hours
 **Purpose**: Implement persistent storage with proper error handling
 
 ### Implementation details
@@ -196,14 +196,14 @@ export class JsonNotesStorage {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
-    
+
     const dir = path.dirname(this.dataPath);
     try {
       await fs.access(dir);
     } catch {
       await fs.mkdir(dir, { recursive: true });
     }
-    
+
     await this.loadNotes();
     this.initialized = true;
   }
@@ -212,7 +212,7 @@ export class JsonNotesStorage {
     try {
       const data = await fs.readFile(this.dataPath, 'utf8');
       const parsed = JSON.parse(data);
-      
+
       if (Array.isArray(parsed)) {
         for (const note of parsed) {
           const validated = NoteSchema.parse(note);
@@ -229,10 +229,10 @@ export class JsonNotesStorage {
   private async saveNotes(): Promise<void> {
     const notesArray = Array.from(this.notes.values());
     const tempPath = `${this.dataPath}.tmp`;
-    
+
     await fs.writeFile(
-      tempPath, 
-      JSON.stringify(notesArray, null, 2), 
+      tempPath,
+      JSON.stringify(notesArray, null, 2),
       'utf8'
     );
     await fs.rename(tempPath, this.dataPath);
@@ -248,7 +248,7 @@ export class JsonNotesStorage {
       created: now,
       updated: now
     };
-    
+
     this.notes.set(note.id, note);
     await this.saveNotes();
     return note;
@@ -289,7 +289,7 @@ export class NotesError extends Error {
 
 export function handleStorageError(error: any): string {
   console.error('Storage error:', error);
-  
+
   if (error.code === 'EACCES') {
     return 'Permission denied accessing notes file';
   }
@@ -299,7 +299,7 @@ export function handleStorageError(error: any): string {
   if (error instanceof SyntaxError) {
     return 'Corrupted notes database';
   }
-  
+
   return 'An unexpected storage error occurred';
 }
 ```
@@ -313,16 +313,16 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 
 describe('JsonNotesStorage', () => {
   let storage: JsonNotesStorage;
-  
+
   beforeEach(async () => {
     storage = new JsonNotesStorage('./test-data/notes.json');
     await storage.initialize();
   });
-  
+
   it('should create and retrieve notes', async () => {
     const note = await storage.createNote('Test', 'Content');
     expect(note.title).toBe('Test');
-    
+
     const retrieved = await storage.getNote(note.id);
     expect(retrieved).toEqual(note);
   });
@@ -331,8 +331,8 @@ describe('JsonNotesStorage', () => {
 
 ## Section 3: Implementing CRUD tools
 
-**Difficulty**: Medium  
-**Estimated Time**: 6-8 hours  
+**Difficulty**: Medium
+**Estimated Time**: 6-8 hours
 **Purpose**: Create MCP tools for note operations with proper validation
 
 ### Tool implementation patterns
@@ -355,7 +355,7 @@ export class NotesServer {
       name: "notes-server",
       version: "1.0.0"
     });
-    
+
     this.storage = new JsonNotesStorage();
   }
 
@@ -415,20 +415,20 @@ export class NotesServer {
       async ({ tag, limit }) => {
         try {
           let notes = await this.storage.getAllNotes();
-          
+
           if (tag) {
             notes = notes.filter(n => n.tags.includes(tag));
           }
-          
+
           notes = notes.slice(0, limit);
-          
+
           const summary = notes.map(n => ({
             id: n.id,
             title: n.title,
             tags: n.tags,
             created: n.created
           }));
-          
+
           return {
             content: [{
               type: "text",
@@ -446,7 +446,7 @@ export class NotesServer {
         }
       }
     );
-    
+
     // Continue with get_note, update_note, delete_note...
   }
 
@@ -478,7 +478,7 @@ export function validateAndSanitize<T>(
     return schema.parse(input);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issues = error.issues.map(i => 
+      const issues = error.issues.map(i =>
         `${i.path.join('.')}: ${i.message}`
       ).join(', ');
       throw new NotesError('VALIDATION_ERROR', `Invalid input: ${issues}`);
@@ -515,8 +515,8 @@ Test scenarios:
 
 ## Section 4: Advanced features - resources and prompts
 
-**Difficulty**: Medium  
-**Estimated Time**: 5-6 hours  
+**Difficulty**: Medium
+**Estimated Time**: 5-6 hours
 **Purpose**: Implement MCP resources and prompts for enhanced functionality
 
 ### Implementing resources
@@ -538,7 +538,7 @@ private registerResources(): void {
       if (!note) {
         throw new NotesError('NOT_FOUND', `Note ${id} not found`);
       }
-      
+
       return {
         uri: `note:///${id}`,
         mimeType: "text/markdown",
@@ -578,13 +578,13 @@ private registerPrompts(): void {
     },
     async ({ tag }) => {
       const notes = await this.storage.getAllNotes();
-      const filtered = tag ? 
+      const filtered = tag ?
         notes.filter(n => n.tags.includes(tag)) : notes;
-      
+
       const noteContent = filtered
         .map(n => `Title: ${n.title}\n${n.content}`)
         .join('\n---\n');
-      
+
       return {
         messages: [
           {
@@ -607,8 +607,8 @@ private registerPrompts(): void {
 
 ## Section 5: Error handling and validation
 
-**Difficulty**: Medium  
-**Estimated Time**: 4-5 hours  
+**Difficulty**: Medium
+**Estimated Time**: 4-5 hours
 **Purpose**: Implement comprehensive error handling and security
 
 ### Structured error handling
@@ -625,24 +625,24 @@ export async function withErrorHandling<T>(
     return { success: true, data: result };
   } catch (error) {
     console.error(`Error in ${context}:`, error);
-    
+
     if (error instanceof NotesError) {
-      return { 
-        success: false, 
-        error: `${error.code}: ${error.message}` 
+      return {
+        success: false,
+        error: `${error.code}: ${error.message}`
       };
     }
-    
+
     if (error instanceof z.ZodError) {
-      return { 
-        success: false, 
-        error: `Validation failed: ${error.issues[0].message}` 
+      return {
+        success: false,
+        error: `Validation failed: ${error.issues[0].message}`
       };
     }
-    
-    return { 
-      success: false, 
-      error: 'An unexpected error occurred' 
+
+    return {
+      success: false,
+      error: 'An unexpected error occurred'
     };
   }
 }
@@ -660,11 +660,11 @@ export class SecurityValidator {
 
   static sanitizeInput(input: string): string {
     let sanitized = input;
-    
+
     for (const pattern of this.DANGEROUS_PATTERNS) {
       sanitized = sanitized.replace(pattern, '');
     }
-    
+
     return sanitized.slice(0, 10000); // Limit length
   }
 
@@ -688,7 +688,7 @@ describe('Error Handling', () => {
       title: '', // Invalid - empty title
       content: 'Test'
     });
-    
+
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain('Validation');
   });
@@ -697,8 +697,8 @@ describe('Error Handling', () => {
 
 ## Section 6: Server lifecycle and transport
 
-**Difficulty**: Hard  
-**Estimated Time**: 6-7 hours  
+**Difficulty**: Hard
+**Estimated Time**: 6-7 hours
 **Purpose**: Implement proper server lifecycle management and multiple transports
 
 ### STDIO transport implementation
@@ -713,22 +713,22 @@ import { NotesServer } from "./server.js";
 async function startStdioServer() {
   const server = new NotesServer();
   await server.initialize();
-  
+
   const transport = new StdioServerTransport();
-  
+
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
     console.error('Shutting down server...');
     await server.shutdown();
     process.exit(0);
   });
-  
+
   process.on('SIGTERM', async () => {
     console.error('Terminating server...');
     await server.shutdown();
     process.exit(0);
   });
-  
+
   await server.getServer().connect(transport);
   console.error('Notes MCP server running on STDIO');
 }
@@ -757,7 +757,7 @@ export class HttpServerTransport {
 
   private setupMiddleware(): void {
     this.app.use(express.json());
-    
+
     // CORS for browser-based clients
     this.app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
@@ -780,7 +780,7 @@ export class HttpServerTransport {
     });
 
     this.server = createServer(this.app);
-    
+
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
         console.log(`HTTP server listening on port ${this.port}`);
@@ -823,15 +823,15 @@ export function loadConfig(): Config {
     maxNotes: parseInt(process.env.MCP_MAX_NOTES || '10000'),
     enableDebug: process.env.MCP_DEBUG === 'true'
   };
-  
+
   return ConfigSchema.parse(config);
 }
 ```
 
 ## Section 7: Testing and validation
 
-**Difficulty**: Medium  
-**Estimated Time**: 5-6 hours  
+**Difficulty**: Medium
+**Estimated Time**: 5-6 hours
 **Purpose**: Implement comprehensive testing strategy
 
 ### Unit testing setup
@@ -870,12 +870,12 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 
 describe('Note Tools', () => {
   let server: NotesServer;
-  
+
   beforeEach(async () => {
     server = new NotesServer();
     await server.initialize();
   });
-  
+
   describe('create_note', () => {
     it('should create note with valid input', async () => {
       const result = await server.callTool('create_note', {
@@ -883,17 +883,17 @@ describe('Note Tools', () => {
         content: 'Test content',
         tags: ['test']
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('noteId');
     });
-    
+
     it('should reject empty title', async () => {
       const result = await server.callTool('create_note', {
         title: '',
         content: 'Test content'
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Validation');
     });
@@ -930,8 +930,8 @@ Create test scenarios document:
 
 ## Section 8: Advanced patterns and optimization
 
-**Difficulty**: Hard  
-**Estimated Time**: 8-10 hours  
+**Difficulty**: Hard
+**Estimated Time**: 8-10 hours
 **Purpose**: Implement production-ready patterns and performance optimization
 
 ### Implementing caching layer
@@ -960,17 +960,17 @@ export class CachedStorage {
     if (cached) {
       return JSON.parse(cached);
     }
-    
+
     // Fetch from storage
     const note = await this.storage.getNote(id);
     if (note) {
       await this.redis.setex(
-        `note:${id}`, 
-        this.cacheTTL, 
+        `note:${id}`,
+        this.cacheTTL,
         JSON.stringify(note)
       );
     }
-    
+
     return note;
   }
 
@@ -990,7 +990,7 @@ import { Readable } from 'stream';
 export class StreamingTools {
   async* streamNotes(filter?: (note: Note) => boolean): AsyncGenerator<Note> {
     const notes = await this.storage.getAllNotes();
-    
+
     for (const note of notes) {
       if (!filter || filter(note)) {
         yield note;
@@ -1008,7 +1008,7 @@ export class StreamingTools {
         this.push(null);
       }
     });
-    
+
     return stream;
   }
 }
@@ -1026,10 +1026,10 @@ export class MetricsCollector {
     if (!this.metrics.has(operation)) {
       this.metrics.set(operation, []);
     }
-    
+
     const values = this.metrics.get(operation)!;
     values.push(duration);
-    
+
     // Keep only last 1000 measurements
     if (values.length > 1000) {
       values.shift();
@@ -1046,12 +1046,12 @@ export class MetricsCollector {
     if (values.length === 0) {
       return { count: 0, avg: 0, p95: 0, p99: 0 };
     }
-    
+
     const sorted = [...values].sort((a, b) => a - b);
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
     const p95 = sorted[Math.floor(sorted.length * 0.95)];
     const p99 = sorted[Math.floor(sorted.length * 0.99)];
-    
+
     return { count: values.length, avg, p95, p99 };
   }
 }
@@ -1059,8 +1059,8 @@ export class MetricsCollector {
 
 ## Section 9: Production deployment
 
-**Difficulty**: Hard  
-**Estimated Time**: 6-8 hours  
+**Difficulty**: Hard
+**Estimated Time**: 6-8 hours
 **Purpose**: Deploy server for production use
 
 ### Docker containerization
@@ -1155,9 +1155,9 @@ export class HealthCheck {
       memory: this.checkMemory(),
       diskSpace: await this.checkDiskSpace()
     };
-    
+
     const allHealthy = Object.values(checks).every(v => v);
-    
+
     return {
       status: allHealthy ? 'healthy' : 'unhealthy',
       uptime: process.uptime(),
@@ -1184,8 +1184,8 @@ export class HealthCheck {
 
 ## Section 10: Documentation and maintenance
 
-**Difficulty**: Easy  
-**Estimated Time**: 3-4 hours  
+**Difficulty**: Easy
+**Estimated Time**: 3-4 hours
 **Purpose**: Create comprehensive documentation for users and developers
 
 ### User documentation

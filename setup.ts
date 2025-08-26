@@ -76,7 +76,7 @@ async function main() {
     // Step 2: Initialize project structure (30 minutes equivalent)
     log('\nStep 2: Creating project structure...', 'bold');
 
-    const projectName = 'notes-mcp-server';
+    const projectName = 'mcp-notes';
 
     // Create subdirectories
     const directories = [
@@ -95,7 +95,7 @@ async function main() {
     log('\nStep 3: Setting up package.json and dependencies...', 'bold');
 
     const packageJson = {
-      "name": "notes-mcp-server",
+      "name": "mcp-notes",
       "version": "1.0.0",
       "description": "Personal Note Manager MCP Server - Learning Project",
       "type": "module",
@@ -276,7 +276,7 @@ After building, you can test the server using the MCP Inspector:
 ## 📁 Project Structure
 
 \`\`\`
-notes-mcp-server/
+mcp-notes/
 ├── src/
 │   ├── index.ts          # Main server entry point
 │   ├── storage/          # Data persistence layer (coming soon)
